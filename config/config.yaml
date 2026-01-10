@@ -1,0 +1,65 @@
+server:
+  port: 8080
+  read_timeout: 30s
+  write_timeout: 30s
+  mode: debug
+
+database:
+  host: ${DATABASE_HOST}
+  port: ${DATABASE_PORT:-3306}
+  user: ${DATABASE_USER}
+  password: ${DATABASE_PASSWORD}
+  dbname: ${DATABASE_DBNAME:-xiaohongshu_image}
+  max_open_conns: 100
+  max_idle_conns: 10
+  conn_max_lifetime: 3600
+
+redis:
+  host: ${REDIS_HOST}
+  port: ${REDIS_PORT:-6379}
+  password: ${REDIS_PASSWORD}
+  db: ${REDIS_DB:-0}
+
+minio:
+  endpoint: ${MINIO_ENDPOINT}
+  access_key: ${MINIO_ACCESS_KEY}
+  secret_key: ${MINIO_SECRET_KEY}
+  bucket: ${MINIO_BUCKET:-generated-content}
+  use_ssl: ${MINIO_USE_SSL:-false}
+  region: ${MINIO_REGION:-us-east-1}
+  presigned_expiry: 3600
+
+llm:
+  base_url: ${LLM_BASE_URL}
+  api_key: ${LLM_API_KEY}
+  model: ${LLM_MODEL}
+  timeout: 15s
+  max_retries: 2
+
+smtp:
+  host: ${SMTP_HOST}
+  port: ${SMTP_PORT:-1025}
+  user: ${SMTP_USER}
+  password: ${SMTP_PASSWORD}
+  from: ${SMTP_FROM}
+
+asynq:
+  redis_addr: ${ASYNQ_REDIS_ADDR}
+  redis_password: ${ASYNQ_REDIS_PASSWORD}
+  redis_db: ${ASYNQ_REDIS_DB:-1}
+  concurrency: 10
+  queues:
+    critical: 6
+    default: 3
+    low: 1
+
+nacos:
+  addr: ${NACOS_ADDR}
+  port: ${NACOS_PORT:-8848}
+  namespace: ${NACOS_NAMESPACE:-public}
+  group: ${NACOS_GROUP:-DEFAULT_GROUP}
+  data_id: ${NACOS_DATA_ID:-xiaohongshu-image}
+  username: ${NACOS_USERNAME}
+  password: ${NACOS_PASSWORD}
+  log_dir: ${NACOS_LOG_DIR:-/tmp/nacos/log}
+  log_level: ${NACOS_LOG_LEVEL:-info}
