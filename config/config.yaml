@@ -1,8 +1,8 @@
 server:
-  port: 8080
+  port: ${SERVER_PORT:-8080}
   read_timeout: 30s
   write_timeout: 30s
-  mode: debug
+  mode: ${SERVER_MODE:-debug}
 
 database:
   host: ${DATABASE_HOST}
