@@ -109,11 +109,12 @@ func main() {
 		},
 	)
 
-	workerInstance.RegisterHandlers(asynqServer)
+	mux := asynq.NewServeMux()
+	workerInstance.RegisterHandlers(mux)
 
 	go func() {
 		logger.Info("Starting worker server")
-		if err := asynqServer.Run(asynqServer); err != nil {
+		if err := asynqServer.Run(mux); err != nil {
 			logger.Fatal("Failed to run worker server", zap.Error(err))
 		}
 	}()

@@ -141,10 +141,10 @@ func loadFromNacos(cfg *Config) error {
 		cc.Password = cfg.Nacos.Password
 	}
 
-	client, err := clients.NewConfigClient(
-		vo.WithNacos(sc...),
-		vo.WithClientConfig(cc),
-	)
+	client, err := clients.NewConfigClient(vo.NacosClientParam{
+		ClientConfig:  &cc,
+		ServerConfigs: sc,
+	})
 	if err != nil {
 		return fmt.Errorf("failed to create Nacos client: %w", err)
 	}

@@ -1,6 +1,7 @@
 package mailer
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -22,7 +23,6 @@ type Service struct {
 
 func NewService(cfg *config.SMTPConfig) *Service {
 	dialer := gomail.NewDialer(cfg.Host, cfg.Port, cfg.User, cfg.Password)
-	dialer.Timeout = 30 * time.Second
 
 	return &Service{
 		dialer: dialer,
@@ -31,6 +31,10 @@ func NewService(cfg *config.SMTPConfig) *Service {
 }
 
 func (s *Service) Send(email Email) error {
+	return s.SendWithTimeout(email, 30*time.Second)
+}
+
+func (s *Service) SendWithTimeout(email Email, timeout time.Duration) error {
 	m := gomail.NewMessage()
 	m.SetHeader("From", s.from)
 	m.SetHeader("To", email.To)
@@ -42,7 +46,21 @@ func (s *Service) Send(email Email) error {
 		m.SetBody("text/plain", email.Body)
 	}
 
-	return s.dialer.DialAndSend(m)
+	// 使用 context 实现超时控制
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	done := make(chan error, 1)
+	go func() {
+		done <- s.dialer.DialAndSend(m)
+	}()
+
+	select {
+	case err := <-done:
+		return err
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }
 
 func (s *Service) SendResultEmail(to, requestType, prompt, resultURL string) error {

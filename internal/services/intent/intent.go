@@ -240,11 +240,10 @@ func (s *Service) callLLM(ctx context.Context, userPrompt string) (*IntentResult
 		return nil, fmt.Errorf("failed to marshal LLM request: %w", err)
 	}
 
-	url := fmt.Sprintf("%s/chat/completions", s.cfg.BaseURL)
-
+	var result *interface{}
 	var lastErr error
 	for i := 0; i < s.cfg.MaxRetries; i++ {
-		result, err := s.httpClient.Do(reqJSON)
+		result, err = s.httpClient.Do(reqJSON)
 		if err == nil {
 			break
 		}
@@ -256,9 +255,13 @@ func (s *Service) callLLM(ctx context.Context, userPrompt string) (*IntentResult
 		return nil, lastErr
 	}
 
-	var intentResult IntentResult
-	if err := json.Unmarshal([]byte(fmt.Sprintf("%v", result)), &intentResult); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal intent result: %w", err)
+	if result == nil {
+		return nil, fmt.Errorf("LLM returned nil result")
+	}
+
+	intentResult, ok := (*result).(IntentResult)
+	if !ok {
+		return nil, fmt.Errorf("failed to convert result to IntentResult")
 	}
 
 	return &intentResult, nil
