@@ -16,7 +16,8 @@ type Database struct {
 }
 
 func New(cfg *config.DatabaseConfig) (*Database, error) {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+	// 使用 Asia/Shanghai 时区 (GMT+8)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Asia%%2FShanghai",
 		cfg.User,
 		cfg.Password,
 		cfg.Host,

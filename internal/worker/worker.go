@@ -129,12 +129,14 @@ func (w *Worker) HandlePollComments(ctx context.Context, t *asynq.Task) error {
 			continue
 		}
 
+		now := time.Now()
 		dbComment := &models.Comment{
 			NoteTarget:       payload.NoteTarget,
 			CommentUID:       commentUID,
 			UserName:         &comment.UserName,
 			Content:          comment.Content,
 			CommentCreatedAt: &comment.CommentCreatedAt,
+			IngestedAt:       now,
 		}
 
 		if err := w.db.CreateComment(dbComment); err != nil {
