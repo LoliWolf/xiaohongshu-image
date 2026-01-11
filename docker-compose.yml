@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.9'
 
 services:
   api:
@@ -10,19 +10,59 @@ services:
       - "31006:8080"
     environment:
       - SERVER_PORT=8080
-      - SERVER_MODE=debug
-      - NACOS_ADDR=${NACOS_ADDR}
+      - SERVER_MODE=${SERVER_MODE:-debug}
+      # Nacos配置（可选，如果使用Nacos配置中心）
+      - NACOS_ADDR=${NACOS_ADDR:-}
       - NACOS_PORT=${NACOS_PORT:-8848}
       - NACOS_NAMESPACE=${NACOS_NAMESPACE:-public}
       - NACOS_GROUP=${NACOS_GROUP:-DEFAULT_GROUP}
       - NACOS_DATA_ID=${NACOS_DATA_ID:-xiaohongshu-image}
-      - NACOS_USERNAME=${NACOS_USERNAME}
-      - NACOS_PASSWORD=${NACOS_PASSWORD}
+      - NACOS_USERNAME=${NACOS_USERNAME:-}
+      - NACOS_PASSWORD=${NACOS_PASSWORD:-}
       - NACOS_LOG_DIR=${NACOS_LOG_DIR:-/tmp/nacos/log}
       - NACOS_LOG_LEVEL=${NACOS_LOG_LEVEL:-info}
+      # 数据库配置（如果不使用Nacos）
+      - DATABASE_HOST=${DATABASE_HOST:-}
+      - DATABASE_PORT=${DATABASE_PORT:-3306}
+      - DATABASE_USER=${DATABASE_USER:-}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD:-}
+      - DATABASE_DBNAME=${DATABASE_DBNAME:-xiaohongshu_image}
+      # Redis配置（如果不使用Nacos）
+      - REDIS_HOST=${REDIS_HOST:-}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - REDIS_DB=${REDIS_DB:-0}
+      # MinIO配置（如果不使用Nacos）
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT:-}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-}
+      - MINIO_BUCKET=${MINIO_BUCKET:-xiaohongshu-image}
+      - MINIO_USE_SSL=${MINIO_USE_SSL:-false}
+      - MINIO_REGION=${MINIO_REGION:-us-east-1}
+      # LLM配置（如果不使用Nacos）
+      - LLM_BASE_URL=${LLM_BASE_URL:-}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - LLM_MODEL=${LLM_MODEL:-}
+      # SMTP配置（如果不使用Nacos）
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-1025}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - SMTP_FROM=${SMTP_FROM:-}
+      # Asynq配置（如果不使用Nacos）
+      - ASYNQ_REDIS_ADDR=${ASYNQ_REDIS_ADDR:-}
+      - ASYNQ_REDIS_PASSWORD=${ASYNQ_REDIS_PASSWORD:-}
+      - ASYNQ_REDIS_DB=${ASYNQ_REDIS_DB:-1}
     networks:
       - xiaohongshu-network
     restart: unless-stopped
+    healthcheck:
+      # 健康检查：测试API服务是否可用
+      test: ["CMD", "wget", "-O", "/dev/null", "-q", "http://localhost:8080/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
 
   worker:
     build:
@@ -30,19 +70,55 @@ services:
       dockerfile: Dockerfile.worker
     container_name: xiaohongshu-worker
     environment:
-      - SERVER_MODE=debug
-      - NACOS_ADDR=${NACOS_ADDR}
+      - SERVER_MODE=${SERVER_MODE:-debug}
+      # Nacos配置（可选，如果使用Nacos配置中心）
+      - NACOS_ADDR=${NACOS_ADDR:-}
       - NACOS_PORT=${NACOS_PORT:-8848}
       - NACOS_NAMESPACE=${NACOS_NAMESPACE:-public}
       - NACOS_GROUP=${NACOS_GROUP:-DEFAULT_GROUP}
       - NACOS_DATA_ID=${NACOS_DATA_ID:-xiaohongshu-image}
-      - NACOS_USERNAME=${NACOS_USERNAME}
-      - NACOS_PASSWORD=${NACOS_PASSWORD}
+      - NACOS_USERNAME=${NACOS_USERNAME:-}
+      - NACOS_PASSWORD=${NACOS_PASSWORD:-}
       - NACOS_LOG_DIR=${NACOS_LOG_DIR:-/tmp/nacos/log}
       - NACOS_LOG_LEVEL=${NACOS_LOG_LEVEL:-info}
+      # 数据库配置（如果不使用Nacos）
+      - DATABASE_HOST=${DATABASE_HOST:-}
+      - DATABASE_PORT=${DATABASE_PORT:-3306}
+      - DATABASE_USER=${DATABASE_USER:-}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD:-}
+      - DATABASE_DBNAME=${DATABASE_DBNAME:-xiaohongshu_image}
+      # Redis配置（如果不使用Nacos）
+      - REDIS_HOST=${REDIS_HOST:-}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - REDIS_DB=${REDIS_DB:-0}
+      # MinIO配置（如果不使用Nacos）
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT:-}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-}
+      - MINIO_BUCKET=${MINIO_BUCKET:-xiaohongshu-image}
+      - MINIO_USE_SSL=${MINIO_USE_SSL:-false}
+      - MINIO_REGION=${MINIO_REGION:-us-east-1}
+      # LLM配置（如果不使用Nacos）
+      - LLM_BASE_URL=${LLM_BASE_URL:-}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - LLM_MODEL=${LLM_MODEL:-}
+      # SMTP配置（如果不使用Nacos）
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-1025}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - SMTP_FROM=${SMTP_FROM:-}
+      # Asynq配置（如果不使用Nacos）
+      - ASYNQ_REDIS_ADDR=${ASYNQ_REDIS_ADDR:-}
+      - ASYNQ_REDIS_PASSWORD=${ASYNQ_REDIS_PASSWORD:-}
+      - ASYNQ_REDIS_DB=${ASYNQ_REDIS_DB:-1}
     networks:
       - xiaohongshu-network
     restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
 
   web:
     build:
@@ -52,10 +128,14 @@ services:
     ports:
       - "31007:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:31006
+      # 在Docker网络中，使用服务名访问API；对外暴露时使用localhost
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:31006}
     networks:
       - xiaohongshu-network
     restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
 
 networks:
   xiaohongshu-network:

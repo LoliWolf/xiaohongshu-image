@@ -116,7 +116,8 @@ NACOS_PASSWORD=nacos
   "minio": {
     "endpoint": "your-minio-host.com:9000",
     "access_key": "your-access-key",
-    "secret_key": "your-secret-key"
+    "secret_key": "your-secret-key",
+    "bucket": "xiaohongshu-image"
   },
   "llm": {
     "base_url": "https://api.openai.com/v1",

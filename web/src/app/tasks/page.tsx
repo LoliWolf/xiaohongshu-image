@@ -1,5 +1,7 @@
+'use client';
+
 import { useState, useEffect } from 'react';
-import { apiClient, Task } from '../lib/api';
+import { apiClient, Task } from '@/src/lib/api';
 import Link from 'next/link';
 
 export default function TasksPage() {
