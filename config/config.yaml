@@ -24,7 +24,7 @@ minio:
   endpoint: ${MINIO_ENDPOINT}
   access_key: ${MINIO_ACCESS_KEY}
   secret_key: ${MINIO_SECRET_KEY}
-  bucket: ${MINIO_BUCKET:-generated-content}
+  bucket: ${MINIO_BUCKET:-xiaohongshu-image}
   use_ssl: ${MINIO_USE_SSL:-false}
   region: ${MINIO_REGION:-us-east-1}
   presigned_expiry: 3600
