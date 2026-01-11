@@ -55,5 +55,6 @@ tmp/
 temp/
 
 cmd/api/cache
+cmd/worker/cache
 
 bin

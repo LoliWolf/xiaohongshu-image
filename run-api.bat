@@ -57,29 +57,12 @@ if not exist "config\config.yaml" (
 )
 
 echo [信息] 配置文件: config\config.yaml
+echo [信息] 正在启动API服务...
+echo [提示] 如需调试，请使用VSCode/Cursor的调试功能（F5）
+echo.
 
-REM 检查是否为debug模式
-if "%1"=="--debug" (
-    echo [信息] 正在以调试模式启动API服务...
-    echo [提示] 请使用Cursor/VSCode的调试功能（F5）来启动调试
-    echo [提示] 或在终端运行: dlv debug ./cmd/api
-    echo.
-    REM 使用delve调试器启动
-    where dlv >nul 2>&1
-    if errorlevel 1 (
-        echo [错误] 未找到Delve调试器 (dlv)
-        echo [提示] 请安装Delve: go install github.com/go-delve/delve/cmd/dlv@latest
-        echo [提示] 或使用Cursor/VSCode的调试功能（F5）
-        pause
-        exit /b 1
-    )
-    dlv debug ./cmd/api
-) else (
-    echo [信息] 正在启动API服务...
-    echo.
-    REM 运行API服务
-    bin\api.exe
-)
+REM 运行API服务
+bin\api.exe
 
 REM 如果程序退出，显示退出信息
 if errorlevel 1 (
