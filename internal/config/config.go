@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -15,14 +16,14 @@ import (
 )
 
 type Config struct {
-	Server   ServerConfig   `mapstructure:"server"`
-	Database DatabaseConfig `mapstructure:"database"`
-	Redis    RedisConfig    `mapstructure:"redis"`
-	MinIO    MinIOConfig    `mapstructure:"minio"`
-	LLM      LLMConfig      `mapstructure:"llm"`
-	SMTP     SMTPConfig     `mapstructure:"smtp"`
-	Asynq    AsynqConfig    `mapstructure:"asynq"`
-	Nacos    NacosConfig    `mapstructure:"nacos"`
+	Server   ServerConfig   `mapstructure:"server" json:"server"`
+	Database DatabaseConfig `mapstructure:"database" json:"database"`
+	Redis    RedisConfig    `mapstructure:"redis" json:"redis"`
+	MinIO    MinIOConfig    `mapstructure:"minio" json:"minio"`
+	LLM      LLMConfig      `mapstructure:"llm" json:"llm"`
+	SMTP     SMTPConfig     `mapstructure:"smtp" json:"smtp"`
+	Asynq    AsynqConfig    `mapstructure:"asynq" json:"asynq"`
+	Nacos    NacosConfig    `mapstructure:"nacos" json:"nacos"`
 }
 
 type ServerConfig struct {
@@ -33,55 +34,55 @@ type ServerConfig struct {
 }
 
 type DatabaseConfig struct {
-	Host            string `mapstructure:"host"`
-	Port            int    `mapstructure:"port"`
-	User            string `mapstructure:"user"`
-	Password        string `mapstructure:"password"`
-	DBName          string `mapstructure:"dbname"`
-	MaxOpenConns    int    `mapstructure:"max_open_conns"`
-	MaxIdleConns    int    `mapstructure:"max_idle_conns"`
-	ConnMaxLifetime int    `mapstructure:"conn_max_lifetime"`
+	Host            string `mapstructure:"host" json:"host"`
+	Port            int    `mapstructure:"port" json:"port"`
+	User            string `mapstructure:"user" json:"user"`
+	Password        string `mapstructure:"password" json:"password"`
+	DBName          string `mapstructure:"dbname" json:"dbname"`
+	MaxOpenConns    int    `mapstructure:"max_open_conns" json:"max_open_conns"`
+	MaxIdleConns    int    `mapstructure:"max_idle_conns" json:"max_idle_conns"`
+	ConnMaxLifetime int    `mapstructure:"conn_max_lifetime" json:"conn_max_lifetime"`
 }
 
 type RedisConfig struct {
-	Host     string `mapstructure:"host"`
-	Port     int    `mapstructure:"port"`
-	Password string `mapstructure:"password"`
-	DB       int    `mapstructure:"db"`
+	Host     string `mapstructure:"host" json:"host"`
+	Port     int    `mapstructure:"port" json:"port"`
+	Password string `mapstructure:"password" json:"password"`
+	DB       int    `mapstructure:"db" json:"db"`
 }
 
 type MinIOConfig struct {
-	Endpoint        string `mapstructure:"endpoint"`
-	AccessKey       string `mapstructure:"access_key"`
-	SecretKey       string `mapstructure:"secret_key"`
-	Bucket          string `mapstructure:"bucket"`
-	UseSSL          bool   `mapstructure:"use_ssl"`
-	Region          string `mapstructure:"region"`
-	PresignedExpiry int    `mapstructure:"presigned_expiry"`
+	Endpoint        string `mapstructure:"endpoint" json:"endpoint"`
+	AccessKey       string `mapstructure:"access_key" json:"access_key"`
+	SecretKey       string `mapstructure:"secret_key" json:"secret_key"`
+	Bucket          string `mapstructure:"bucket" json:"bucket"`
+	UseSSL          bool   `mapstructure:"use_ssl" json:"use_ssl"`
+	Region          string `mapstructure:"region" json:"region"`
+	PresignedExpiry int    `mapstructure:"presigned_expiry" json:"presigned_expiry"`
 }
 
 type LLMConfig struct {
-	BaseURL    string        `mapstructure:"base_url"`
-	APIKey     string        `mapstructure:"api_key"`
-	Model      string        `mapstructure:"model"`
-	Timeout    time.Duration `mapstructure:"timeout"`
-	MaxRetries int           `mapstructure:"max_retries"`
+	BaseURL    string        `mapstructure:"base_url" json:"base_url"`
+	APIKey     string        `mapstructure:"api_key" json:"api_key"`
+	Model      string        `mapstructure:"model" json:"model"`
+	Timeout    time.Duration `mapstructure:"timeout" json:"timeout"`
+	MaxRetries int           `mapstructure:"max_retries" json:"max_retries"`
 }
 
 type SMTPConfig struct {
-	Host     string `mapstructure:"host"`
-	Port     int    `mapstructure:"port"`
-	User     string `mapstructure:"user"`
-	Password string `mapstructure:"password"`
-	From     string `mapstructure:"from"`
+	Host     string `mapstructure:"host" json:"host"`
+	Port     int    `mapstructure:"port" json:"port"`
+	User     string `mapstructure:"user" json:"user"`
+	Password string `mapstructure:"password" json:"password"`
+	From     string `mapstructure:"from" json:"from"`
 }
 
 type AsynqConfig struct {
-	RedisAddr     string         `mapstructure:"redis_addr"`
-	RedisPassword string         `mapstructure:"redis_password"`
-	RedisDB       int            `mapstructure:"redis_db"`
-	Concurrency   int            `mapstructure:"concurrency"`
-	Queues        map[string]int `mapstructure:"queues"`
+	RedisAddr     string         `mapstructure:"redis_addr" json:"redis_addr"`
+	RedisPassword string         `mapstructure:"redis_password" json:"redis_password"`
+	RedisDB       int            `mapstructure:"redis_db" json:"redis_db"`
+	Concurrency   int            `mapstructure:"concurrency" json:"concurrency"`
+	Queues        map[string]int `mapstructure:"queues" json:"queues"`
 }
 
 type NacosConfig struct {
@@ -96,8 +97,55 @@ type NacosConfig struct {
 	LogLevel  string `mapstructure:"log_level"`
 }
 
+// findConfigFile 尝试从多个位置查找配置文件
+func findConfigFile(configPath string) (string, error) {
+	// 首先尝试直接使用提供的路径
+	if _, err := os.Stat(configPath); err == nil {
+		absPath, _ := filepath.Abs(configPath)
+		return absPath, nil
+	}
+
+	// 如果失败，尝试从项目根目录查找
+	// 通过查找 go.mod 文件来确定项目根目录
+	wd, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("failed to get working directory: %w", err)
+	}
+
+	// 向上查找 go.mod 文件
+	dir := wd
+	for {
+		goModPath := filepath.Join(dir, "go.mod")
+		if _, err := os.Stat(goModPath); err == nil {
+			// 找到项目根目录，尝试在此查找配置文件
+			configFullPath := filepath.Join(dir, configPath)
+			if _, err := os.Stat(configFullPath); err == nil {
+				absPath, _ := filepath.Abs(configFullPath)
+				return absPath, nil
+			}
+			break
+		}
+
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			// 已到达文件系统根目录
+			break
+		}
+		dir = parent
+	}
+
+	// 如果都找不到，返回原始路径（让 viper 报错）
+	return configPath, nil
+}
+
 func Load(configPath string) (*Config, error) {
-	viper.SetConfigFile(configPath)
+	// 尝试查找配置文件
+	resolvedPath, err := findConfigFile(configPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to resolve config file path: %w", err)
+	}
+
+	viper.SetConfigFile(resolvedPath)
 	viper.SetConfigType("yaml")
 
 	viper.AutomaticEnv()
